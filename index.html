@@ -19,9 +19,8 @@ button { font-size: 1em; padding: 5px 10px; margin-left: 10px; cursor: pointer; 
 <h1>USA States Quiz</h1>
 
 <div id="quiz">
-<!-- US map SVG with all 50 states; each <path> must have id="XX" where XX is the state abbreviation -->
 <svg id="usMap" viewBox="0 0 959 593">
-<!-- Example paths: replace the "d" values with the full path data from the public domain SVG -->
+<!-- Example paths: replace "d" with full paths from the public domain SVG -->
 <path id="AL" d="M..." fill="#ccc" stroke="#fff" stroke-width="1"></path>
 <path id="AK" d="M..." fill="#ccc" stroke="#fff" stroke-width="1"></path>
 <path id="AZ" d="M..." fill="#ccc" stroke="#fff" stroke-width="1"></path>
@@ -40,66 +39,27 @@ button { font-size: 1em; padding: 5px 10px; margin-left: 10px; cursor: pointer; 
 <div id="result"></div>
 
 <script>
-// ---------- 1. Define states ----------
+// ---------- States ----------
 const states = [
-{name:"Alabama", abbr:"AL"},
-{name:"Alaska", abbr:"AK"},
-{name:"Arizona", abbr:"AZ"},
-{name:"Arkansas", abbr:"AR"},
-{name:"California", abbr:"CA"},
-{name:"Colorado", abbr:"CO"},
-{name:"Connecticut", abbr:"CT"},
-{name:"Delaware", abbr:"DE"},
-{name:"Florida", abbr:"FL"},
-{name:"Georgia", abbr:"GA"},
-{name:"Hawaii", abbr:"HI"},
-{name:"Idaho", abbr:"ID"},
-{name:"Illinois", abbr:"IL"},
-{name:"Indiana", abbr:"IN"},
-{name:"Iowa", abbr:"IA"},
-{name:"Kansas", abbr:"KS"},
-{name:"Kentucky", abbr:"KY"},
-{name:"Louisiana", abbr:"LA"},
-{name:"Maine", abbr:"ME"},
-{name:"Maryland", abbr:"MD"},
-{name:"Massachusetts", abbr:"MA"},
-{name:"Michigan", abbr:"MI"},
-{name:"Minnesota", abbr:"MN"},
-{name:"Mississippi", abbr:"MS"},
-{name:"Missouri", abbr:"MO"},
-{name:"Montana", abbr:"MT"},
-{name:"Nebraska", abbr:"NE"},
-{name:"Nevada", abbr:"NV"},
-{name:"New Hampshire", abbr:"NH"},
-{name:"New Jersey", abbr:"NJ"},
-{name:"New Mexico", abbr:"NM"},
-{name:"New York", abbr:"NY"},
-{name:"North Carolina", abbr:"NC"},
-{name:"North Dakota", abbr:"ND"},
-{name:"Ohio", abbr:"OH"},
-{name:"Oklahoma", abbr:"OK"},
-{name:"Oregon", abbr:"OR"},
-{name:"Pennsylvania", abbr:"PA"},
-{name:"Rhode Island", abbr:"RI"},
-{name:"South Carolina", abbr:"SC"},
-{name:"South Dakota", abbr:"SD"},
-{name:"Tennessee", abbr:"TN"},
-{name:"Texas", abbr:"TX"},
-{name:"Utah", abbr:"UT"},
-{name:"Vermont", abbr:"VT"},
-{name:"Virginia", abbr:"VA"},
-{name:"Washington", abbr:"WA"},
-{name:"West Virginia", abbr:"WV"},
-{name:"Wisconsin", abbr:"WI"},
-{name:"Wyoming", abbr:"WY"}
+{name:"Alabama", abbr:"AL"}, {name:"Alaska", abbr:"AK"}, {name:"Arizona", abbr:"AZ"}, {name:"Arkansas", abbr:"AR"},
+{name:"California", abbr:"CA"}, {name:"Colorado", abbr:"CO"}, {name:"Connecticut", abbr:"CT"}, {name:"Delaware", abbr:"DE"},
+{name:"Florida", abbr:"FL"}, {name:"Georgia", abbr:"GA"}, {name:"Hawaii", abbr:"HI"}, {name:"Idaho", abbr:"ID"},
+{name:"Illinois", abbr:"IL"}, {name:"Indiana", abbr:"IN"}, {name:"Iowa", abbr:"IA"}, {name:"Kansas", abbr:"KS"},
+{name:"Kentucky", abbr:"KY"}, {name:"Louisiana", abbr:"LA"}, {name:"Maine", abbr:"ME"}, {name:"Maryland", abbr:"MD"},
+{name:"Massachusetts", abbr:"MA"}, {name:"Michigan", abbr:"MI"}, {name:"Minnesota", abbr:"MN"}, {name:"Mississippi", abbr:"MS"},
+{name:"Missouri", abbr:"MO"}, {name:"Montana", abbr:"MT"}, {name:"Nebraska", abbr:"NE"}, {name:"Nevada", abbr:"NV"},
+{name:"New Hampshire", abbr:"NH"}, {name:"New Jersey", abbr:"NJ"}, {name:"New Mexico", abbr:"NM"}, {name:"New York", abbr:"NY"},
+{name:"North Carolina", abbr:"NC"}, {name:"North Dakota", abbr:"ND"}, {name:"Ohio", abbr:"OH"}, {name:"Oklahoma", abbr:"OK"},
+{name:"Oregon", abbr:"OR"}, {name:"Pennsylvania", abbr:"PA"}, {name:"Rhode Island", abbr:"RI"}, {name:"South Carolina", abbr:"SC"},
+{name:"South Dakota", abbr:"SD"}, {name:"Tennessee", abbr:"TN"}, {name:"Texas", abbr:"TX"}, {name:"Utah", abbr:"UT"},
+{name:"Vermont", abbr:"VT"}, {name:"Virginia", abbr:"VA"}, {name:"Washington", abbr:"WA"}, {name:"West Virginia", abbr:"WV"},
+{name:"Wisconsin", abbr:"WI"}, {name:"Wyoming", abbr:"WY"}
 ];
 
-function shuffle(array) {
-return array.sort(() => 0.5 - Math.random());
-}
+function shuffle(array){ return array.sort(() => 0.5 - Math.random()); }
 shuffle(states);
 
-// ---------- 2. Quiz Logic ----------
+// ---------- Quiz Logic ----------
 let currentIndex = 0;
 let correctCount = 0;
 
@@ -111,16 +71,16 @@ const quizDiv = document.getElementById('quiz');
 const gameCanvas = document.getElementById('game');
 const resultDiv = document.getElementById('result');
 
-function highlightState(abbr) {
-states.forEach(s => {
+function highlightState(abbr){
+states.forEach(s=>{
 const path = document.getElementById(s.abbr);
-if(path) path.setAttribute("fill", "#ccc");
+if(path) path.setAttribute("fill","#ccc");
 });
 const currentPath = document.getElementById(abbr);
-if(currentPath) currentPath.setAttribute("fill", "#00f");
+if(currentPath) currentPath.setAttribute("fill","#00f");
 }
 
-function loadQuestion() {
+function loadQuestion(){
 const state = states[currentIndex];
 questionText.textContent = `What is the abbreviation of ${state.name}?`;
 answerInput.value = '';
@@ -129,10 +89,10 @@ answerInput.focus();
 highlightState(state.abbr);
 }
 
-submitBtn.addEventListener('click', () => {
+submitBtn.addEventListener('click', ()=>{
 const userAnswer = answerInput.value.trim().toUpperCase();
 const state = states[currentIndex];
-if(userAnswer === state.abbr) {
+if(userAnswer === state.abbr){
 feedback.textContent = "✅ Correct!";
 correctCount++;
 } else {
@@ -141,15 +101,15 @@ feedback.textContent = `❌ Wrong! Correct answer is ${state.abbr}`;
 
 currentIndex++;
 
-if(currentIndex % 25 === 0 && currentIndex < 50) {
-quizDiv.style.display = 'none';
-gameCanvas.style.display = 'block';
-startPingPong(() => {
-gameCanvas.style.display = 'none';
-quizDiv.style.display = 'block';
+if(currentIndex % 25 === 0 && currentIndex < 50){
+quizDiv.style.display='none';
+gameCanvas.style.display='block';
+startPingPong(()=>{
+gameCanvas.style.display='none';
+quizDiv.style.display='block';
 loadQuestion();
 });
-} else if(currentIndex >= 50) {
+} else if(currentIndex >= 50){
 showResults();
 } else {
 setTimeout(loadQuestion, 800);
@@ -158,8 +118,8 @@ setTimeout(loadQuestion, 800);
 
 loadQuestion();
 
-// ---------- 3. Ping Pong Game ----------
-function startPingPong(callback) {
+// ---------- Ping Pong Game ----------
+function startPingPong(callback){
 const canvas = gameCanvas;
 const ctx = canvas.getContext('2d');
 const paddle = {x:780, y:160, width:10, height:80, speed:6};
@@ -167,18 +127,18 @@ const ball = {x:400, y:200, radius:10, dx:4, dy:4};
 let keys = {};
 let animationFrame;
 
-function keyDownHandler(e) { keys[e.key] = true; }
-function keyUpHandler(e) { keys[e.key] = false; }
+function keyDownHandler(e){ keys[e.key]=true; }
+function keyUpHandler(e){ keys[e.key]=false; }
 
 document.addEventListener('keydown', keyDownHandler);
 document.addEventListener('keyup', keyUpHandler);
 
 const startTime = Date.now();
-const duration = 120000; // 3 minutes
+const duration = 120000;
 
-function gameLoop() {
+function gameLoop(){
 const now = Date.now();
-if(now - startTime >= duration) {
+if(now - startTime >= duration){
 cancelAnimationFrame(animationFrame);
 document.removeEventListener('keydown', keyDownHandler);
 document.removeEventListener('keyup', keyUpHandler);
@@ -186,42 +146,40 @@ callback();
 return;
 }
 
-if(keys['ArrowUp'] && paddle.y > 0) paddle.y -= paddle.speed;
-if(keys['ArrowDown'] && paddle.y + paddle.height < canvas.height) paddle.y += paddle.speed;
+if(keys['ArrowUp'] && paddle.y>0) paddle.y-=paddle.speed;
+if(keys['ArrowDown'] && paddle.y+paddle.height<canvas.height) paddle.y+=paddle.speed;
 
 ball.x += ball.dx;
 ball.y += ball.dy;
 
-if(ball.y - ball.radius <= 0 || ball.y + ball.radius >= canvas.height) ball.dy *= -1;
-if(ball.x - ball.radius <= 0 || ball.x + ball.radius >= canvas.width) ball.dx *= -1;
+if(ball.y-ball.radius<=0 || ball.y+ball.radius>=canvas.height) ball.dy*=-1;
+if(ball.x-ball.radius<=0 || ball.x+ball.radius>=canvas.width) ball.dx*=-1;
 
-if(ball.x + ball.radius >= paddle.x && ball.y >= paddle.y && ball.y <= paddle.y + paddle.height) {
-ball.dx *= -1;
-}
+if(ball.x+ball.radius>=paddle.x && ball.y>=paddle.y && ball.y<=paddle.y+paddle.height) ball.dx*=-1;
 
 ctx.clearRect(0,0,canvas.width,canvas.height);
-ctx.fillStyle = 'white';
-ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+ctx.fillStyle='white';
+ctx.fillRect(paddle.x,paddle.y,paddle.width,paddle.height);
 ctx.beginPath();
-ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+ctx.arc(ball.x,ball.y,ball.radius,0,Math.PI*2);
 ctx.fill();
 
-animationFrame = requestAnimationFrame(gameLoop);
+animationFrame=requestAnimationFrame(gameLoop);
 }
 
-animationFrame = requestAnimationFrame(gameLoop);
+animationFrame=requestAnimationFrame(gameLoop);
 }
 
-// ---------- 4. Results Screen ----------
-function showResults() {
-quizDiv.style.display = 'none';
-const percentage = Math.round((correctCount / 50) * 100);
+// ---------- Results ----------
+function showResults(){
+quizDiv.style.display='none';
+const percentage = Math.round((correctCount/50)*100);
 let grade;
-if(percentage >= 90) grade = 'A';
-else if(percentage >= 80) grade = 'B';
-else if(percentage >= 70) grade = 'C';
-else if(percentage >= 60) grade = 'D';
-else grade = 'F';
+if(percentage>=90) grade='A';
+else if(percentage>=80) grade='B';
+else if(percentage>=70) grade='C';
+else if(percentage>=60) grade='D';
+else grade='F';
 
 resultDiv.innerHTML = `<h2>Quiz Finished!</h2>
 <p>Correct answers: ${correctCount}/50</p>
