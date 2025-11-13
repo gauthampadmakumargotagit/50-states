@@ -141,7 +141,7 @@ feedback.textContent = `❌ Wrong! Correct answer is ${state.abbr}`;
 
 currentIndex++;
 
-if(currentIndex % 10 === 0 && currentIndex < 50) {
+if(currentIndex % 25 === 0 && currentIndex < 50) {
 quizDiv.style.display = 'none';
 gameCanvas.style.display = 'block';
 startPingPong(() => {
@@ -174,7 +174,7 @@ document.addEventListener('keydown', keyDownHandler);
 document.addEventListener('keyup', keyUpHandler);
 
 const startTime = Date.now();
-const duration = 120000; // 2 minutes
+const duration = 120000; // 3 minutes
 
 function gameLoop() {
 const now = Date.now();
