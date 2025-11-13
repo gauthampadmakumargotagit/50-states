@@ -1,23 +1,216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My GitHub Website</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #fafafa;
-      text-align: center;
-      padding: 50px;
-    }
-    h1 {
-      color: #007acc;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USA States Quiz</title>
+<style>
+body { text-align: center; font-family: sans-serif; background: #f0f0f0; }
+#quiz, #result { margin-top: 20px; }
+#stateImage { max-width: 400px; max-height: 250px; margin-bottom: 10px; }
+input[type=text] { font-size: 1em; padding: 5px; width: 50px; text-transform: uppercase; }
+button { font-size: 1em; padding: 5px 10px; margin-left: 10px; cursor: pointer; }
+#game { background: black; display: none; margin: 20px auto; }
+</style>
 </head>
 <body>
-  <h1>Welcome to My Website!</h1>
-  <p>This site is hosted on GitHub Pages 🚀</p>
+<h1>USA States Quiz</h1>
+<div id="quiz">
+<img id="stateImage" src="" alt="State Image">
+<div id="questionText"></div>
+<input type="text" id="answerInput" maxlength="2">
+<button id="submitBtn">Submit</button>
+<div id="feedback" style="margin-top:10px;font-size:1.2em;"></div>
+</div>
+
+<canvas id="game" width="800" height="400"></canvas>
+
+<div id="result" style="margin-top:20px;"></div>
+
+<script>
+// ---------- 1. Define states, abbreviations, and images ----------
+const states = [
+{name:"Alabama", abbr:"AL", img:"images/Alabama.png"},
+{name:"Alaska", abbr:"AK", img:"images/Alaska.png"},
+{name:"Arizona", abbr:"AZ", img:"images/Arizona.png"},
+{name:"Arkansas", abbr:"AR", img:"images/Arkansas.png"},
+{name:"California", abbr:"CA", img:"images/California.png"},
+{name:"Colorado", abbr:"CO", img:"images/Colorado.png"},
+{name:"Connecticut", abbr:"CT", img:"images/Connecticut.png"},
+{name:"Delaware", abbr:"DE", img:"images/Delaware.png"},
+{name:"Florida", abbr:"FL", img:"images/Florida.png"},
+{name:"Georgia", abbr:"GA", img:"images/Georgia.png"},
+{name:"Hawaii", abbr:"HI", img:"images/Hawaii.png"},
+{name:"Idaho", abbr:"ID", img:"images/Idaho.png"},
+{name:"Illinois", abbr:"IL", img:"images/Illinois.png"},
+{name:"Indiana", abbr:"IN", img:"images/Indiana.png"},
+{name:"Iowa", abbr:"IA", img:"images/Iowa.png"},
+{name:"Kansas", abbr:"KS", img:"images/Kansas.png"},
+{name:"Kentucky", abbr:"KY", img:"images/Kentucky.png"},
+{name:"Louisiana", abbr:"LA", img:"images/Louisiana.png"},
+{name:"Maine", abbr:"ME", img:"images/Maine.png"},
+{name:"Maryland", abbr:"MD", img:"images/Maryland.png"},
+{name:"Massachusetts", abbr:"MA", img:"images/Massachusetts.png"},
+{name:"Michigan", abbr:"MI", img:"images/Michigan.png"},
+{name:"Minnesota", abbr:"MN", img:"images/Minnesota.png"},
+{name:"Mississippi", abbr:"MS", img:"images/Mississippi.png"},
+{name:"Missouri", abbr:"MO", img:"images/Missouri.png"},
+{name:"Montana", abbr:"MT", img:"images/Montana.png"},
+{name:"Nebraska", abbr:"NE", img:"images/Nebraska.png"},
+{name:"Nevada", abbr:"NV", img:"images/Nevada.png"},
+{name:"New Hampshire", abbr:"NH", img:"images/New_Hampshire.png"},
+{name:"New Jersey", abbr:"NJ", img:"images/New_Jersey.png"},
+{name:"New Mexico", abbr:"NM", img:"images/New_Mexico.png"},
+{name:"New York", abbr:"NY", img:"images/New_York.png"},
+{name:"North Carolina", abbr:"NC", img:"images/North_Carolina.png"},
+{name:"North Dakota", abbr:"ND", img:"images/North_Dakota.png"},
+{name:"Ohio", abbr:"OH", img:"images/Ohio.png"},
+{name:"Oklahoma", abbr:"OK", img:"images/Oklahoma.png"},
+{name:"Oregon", abbr:"OR", img:"images/Oregon.png"},
+{name:"Pennsylvania", abbr:"PA", img:"images/Pennsylvania.png"},
+{name:"Rhode Island", abbr:"RI", img:"images/Rhode_Island.png"},
+{name:"South Carolina", abbr:"SC", img:"images/South_Carolina.png"},
+{name:"South Dakota", abbr:"SD", img:"images/South_Dakota.png"},
+{name:"Tennessee", abbr:"TN", img:"images/Tennessee.png"},
+{name:"Texas", abbr:"TX", img:"images/Texas.png"},
+{name:"Utah", abbr:"UT", img:"images/Utah.png"},
+{name:"Vermont", abbr:"VT", img:"images/Vermont.png"},
+{name:"Virginia", abbr:"VA", img:"images/Virginia.png"},
+{name:"Washington", abbr:"WA", img:"images/Washington.png"},
+{name:"West Virginia", abbr:"WV", img:"images/West_Virginia.png"},
+{name:"Wisconsin", abbr:"WI", img:"images/Wisconsin.png"},
+{name:"Wyoming", abbr:"WY", img:"images/Wyoming.png"}
+];
+
+// Shuffle states
+function shuffle(array){ return array.sort(() => 0.5 - Math.random()); }
+shuffle(states);
+
+// ---------- 2. Quiz Logic ----------
+let currentIndex = 0;
+let correctCount = 0;
+
+const stateImage = document.getElementById('stateImage');
+const questionText = document.getElementById('questionText');
+const answerInput = document.getElementById('answerInput');
+const submitBtn = document.getElementById('submitBtn');
+const feedback = document.getElementById('feedback');
+const gameCanvas = document.getElementById('game');
+const resultDiv = document.getElementById('result');
+
+function loadQuestion() {
+const state = states[currentIndex];
+stateImage.src = state.img;
+questionText.textContent = `What is the abbreviation of ${state.name}?`;
+answerInput.value = '';
+feedback.textContent = '';
+answerInput.focus();
+}
+
+submitBtn.addEventListener('click', () => {
+const userAnswer = answerInput.value.trim().toUpperCase();
+const state = states[currentIndex];
+
+if(userAnswer === state.abbr){
+feedback.textContent = "✅ Correct!";
+correctCount++;
+} else {
+feedback.textContent = `❌ Wrong! Correct answer is ${state.abbr}`;
+}
+
+currentIndex++;
+
+if(currentIndex % 10 === 0 && currentIndex < 50){
+// Launch ping pong brain break
+quizDiv.style.display = 'none';
+gameCanvas.style.display = 'block';
+startPingPong(() => {
+gameCanvas.style.display = 'none';
+quizDiv.style.display = 'block';
+loadQuestion();
+});
+} else if(currentIndex >= 50){
+// Quiz finished
+showResults();
+} else {
+setTimeout(loadQuestion, 800);
+}
+});
+
+loadQuestion();
+
+// ---------- 3. Ping Pong Game ----------
+function startPingPong(callback){
+const canvas = gameCanvas;
+const ctx = canvas.getContext('2d');
+
+const paddle = {x: 780, y:160, width:10, height:80, speed:6};
+const ball = {x:400, y:200, radius:10, dx:4, dy:4};
+let keys = {};
+document.addEventListener('keydown', e=> keys[e.key]=true);
+document.addEventListener('keyup', e=> keys[e.key]=false);
+
+const startTime = Date.now();
+const duration = 120000; // 2 minutes
+
+function gameLoop(){
+const now = Date.now();
+if(now-startTime >= duration){
+cancelAnimationFrame(animationFrame);
+callback();
+return;
+}
+
+// Move paddle
+if(keys['ArrowUp'] && paddle.y>0) paddle.y-=paddle.speed;
+if(keys['ArrowDown'] && paddle.y+paddle.height<canvas.height) paddle.y+=paddle.speed;
+
+// Move ball
+ball.x += ball.dx;
+ball.y += ball.dy;
+
+// Wall collision
+if(ball.y-ball.radius<=0 || ball.y+ball.radius>=canvas.height) ball.dy*=-1;
+if(ball.x-ball.radius<=0 || ball.x+ball.radius>=canvas.width) ball.dx*=-1;
+
+// Paddle collision
+if(ball.x+ball.radius >= paddle.x && ball.y>=paddle.y && ball.y<=paddle.y+paddle.height){
+ball.dx*=-1;
+}
+
+// Draw
+ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle='white';
+ctx.fillRect(paddle.x,paddle.y,paddle.width,paddle.height);
+ctx.beginPath();
+ctx.arc(ball.x,ball.y,ball.radius,0,Math.PI*2);
+ctx.fill();
+
+animationFrame = requestAnimationFrame(gameLoop);
+}
+
+let animationFrame = requestAnimationFrame(gameLoop);
+}
+
+// ---------- 4. Results ----------
+function showResults(){
+quizDiv.style.display='none';
+const percentage = Math.round((correctCount/50)*100);
+let grade;
+if(percentage>=90) grade='A';
+else if(percentage>=80) grade='B';
+else if(percentage>=70) grade='C';
+else if(percentage>=60) grade='D';
+else grade='F';
+
+resultDiv.innerHTML = `<h2>Quiz Finished!</h2>
+<p>Correct answers: ${correctCount}/50</p>
+<p>Percentage: ${percentage}%</p>
+<p>Letter Grade: ${grade}</p>`;
+}
+
+</script>
 </body>
+</html>
+
 </html>
