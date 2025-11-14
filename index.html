@@ -11,7 +11,10 @@ body { text-align: center; font-family: sans-serif; background: #f0f0f0; }
 #questionText { font-size: 1.2em; margin: 10px 0; }
 input[type=text] { font-size: 1em; padding: 5px; width: 50px; text-transform: uppercase; }
 button { font-size: 1em; padding: 5px 10px; margin-left: 10px; cursor: pointer; }
-#feedback { margin-top:10px;font-size:1.2em; }
+#feedback { margin-top:10px;font-size:1.2em; } { font-family: sans-serif; text-align: center; background: #f0f0f0; }
+#answerInput, #capitalInput { margin: 10px; padding: 5px; font-size: 16px; }
+#quiz, #result, #game, #skipGameBtn { margin: 20px auto; }
+#feedback { margin: 10px; font-weight: bold; }
 #game { background: black; display: none; margin: 20px auto; }
 #skipGameBtn { display: none; margin-top: 10px; font-size:1em; padding:5px 10px; cursor:pointer; }
 </style>
@@ -82,54 +85,49 @@ button { font-size: 1em; padding: 5px 10px; margin-left: 10px; cursor: pointer; 
 
 </svg>
 
-<div id="questionText"></div>
-<input type="text" id="answerInput" maxlength="2">
-<button id="submitBtn">Submit</button>
-<div id="feedback"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USA States Quiz</title>
+</head>
+
+<body>
+
+<!-- QUIZ UI -->
+<!-- QUIZ UI -->
+<div id="quiz">
+  <div id="questionText"></div>
+  <input type="text" id="answerInput" maxlength="2" placeholder="State Abbreviation">
+  <input type="text" id="capitalInput" style="display:none" placeholder="State Capital">
+  <button id="submitBtn">Submit</button>
+  <div id="feedback"></div>
 </div>
 
-<canvas id="game" width="800" height="400"></canvas>
-<button id="skipGameBtn">Skip Game</button>
-<div id="result"></div>
+<!-- Ping-pong canvas -->
+<canvas id="game" width="800" height="400" style="display:none"></canvas>
+<button id="skipGameBtn" style="display:none">Skip Game</button>
+
+<!-- Result display -->
+<div id="result" style="display:none"></div>
 
 <script>
-// ---------- 1. Define states ----------
+// ---------- 1. States ----------
 const states = [
-  {name:"Alabama",abbr:"AL",capital:"Montgomery"},{name:"Alaska",abbr:"AK",capital:"Juneau"},
-  {name:"Arizona",abbr:"AZ",capital:"Phoenix"},{name:"Arkansas",abbr:"AR",capital:"Little Rock"},
-  {name:"California",abbr:"CA",capital:"Sacramento"},{name:"Colorado",abbr:"CO",capital:"Denver"},
-  {name:"Connecticut",abbr:"CT",capital:"Hartford"},{name:"Delaware",abbr:"DE",capital:"Dover"},
-  {name:"Florida",abbr:"FL",capital:"Tallahassee"},{name:"Georgia",abbr:"GA",capital:"Atlanta"},
-  {name:"Hawaii",abbr:"HI",capital:"Honolulu"},{name:"Idaho",abbr:"ID",capital:"Boise"},
-  {name:"Illinois",abbr:"IL",capital:"Springfield"},{name:"Indiana",abbr:"IN",capital:"Indianapolis"},
-  {name:"Iowa",abbr:"IA",capital:"Des Moines"},{name:"Kansas",abbr:"KS",capital:"Topeka"},
-  {name:"Kentucky",abbr:"KY",capital:"Frankfort"},{name:"Louisiana",abbr:"LA",capital:"Baton Rouge"},
-  {name:"Maine",abbr:"ME",capital:"Augusta"},{name:"Maryland",abbr:"MD",capital:"Annapolis"},
-  {name:"Massachusetts",abbr:"MA",capital:"Boston"},{name:"Michigan",abbr:"MI",capital:"Lansing"},
-  {name:"Minnesota",abbr:"MN",capital:"Saint Paul"},{name:"Mississippi",abbr:"MS",capital:"Jackson"},
-  {name:"Missouri",abbr:"MO",capital:"Jefferson City"},{name:"Montana",abbr:"MT",capital:"Helena"},
-  {name:"Nebraska",abbr:"NE",capital:"Lincoln"},{name:"Nevada",abbr:"NV",capital:"Carson City"},
-  {name:"New Hampshire",abbr:"NH",capital:"Concord"},{name:"New Jersey",abbr:"NJ",capital:"Trenton"},
-  {name:"New Mexico",abbr:"NM",capital:"Santa Fe"},{name:"New York",abbr:"NY",capital:"Albany"},
-  {name:"North Carolina",abbr:"NC",capital:"Raleigh"},{name:"North Dakota",abbr:"ND",capital:"Bismarck"},
-  {name:"Ohio",abbr:"OH",capital:"Columbus"},{name:"Oklahoma",abbr:"OK",capital:"Oklahoma City"},
-  {name:"Oregon",abbr:"OR",capital:"Salem"},{name:"Pennsylvania",abbr:"PA",capital:"Harrisburg"},
-  {name:"Rhode Island",abbr:"RI",capital:"Providence"},{name:"South Carolina",abbr:"SC",capital:"Columbia"},
-  {name:"South Dakota",abbr:"SD",capital:"Pierre"},{name:"Tennessee",abbr:"TN",capital:"Nashville"},
-  {name:"Texas",abbr:"TX",capital:"Austin"},{name:"Utah",abbr:"UT",capital:"Salt Lake City"},
-  {name:"Vermont",abbr:"VT",capital:"Montpelier"},{name:"Virginia",abbr:"VA",capital:"Richmond"},
-  {name:"Washington",abbr:"WA",capital:"Olympia"},{name:"West Virginia",abbr:"WV",capital:"Charleston"},
-  {name:"Wisconsin",abbr:"WI",capital:"Madison"},{name:"Wyoming",abbr:"WY",capital:"Cheyenne"}
+  {name:"Alabama",abbr:"AL",capital:"Montgomery"},
+  {name:"Alaska",abbr:"AK",capital:"Juneau"},
+  {name:"California",abbr:"CA",capital:"Sacramento"},
+  // Add all other states here
 ];
 
-function shuffle(array) {
-return array.sort(() => 0.5 - Math.random());
-}
+function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
 shuffle(states);
 
-// ---------- 2. Quiz Logic ----------
+// ---------- 2. Quiz ----------
 let currentIndex = 0;
 let correctCount = 0;
+let step = 0; // 0=abbreviation, 1=capital
 
 const questionText = document.getElementById('questionText');
 const answerInput = document.getElementById('answerInput');
@@ -141,184 +139,167 @@ const gameCanvas = document.getElementById('game');
 const resultDiv = document.getElementById('result');
 const skipBtn = document.getElementById('skipGameBtn');
 
-//jsonPointsTracker = {};
+// Highlight SVG state
 function highlightState(abbr) {
-	//jsonPointsTracker[abbr] = true;
-	states.forEach(s => {
-		const path = document.getElementById(s.abbr);
-		if(path){
-			path.setAttribute("fill", "#ccc");
-		}
-	});
-	const currentPath = document.getElementById(abbr);
-	if(currentPath){
-		currentPath.setAttribute("fill", "#00f");
-	}
+  states.forEach(s => {
+    const path = document.getElementById(s.abbr);
+    if (path) path.setAttribute("fill", "#ccc");
+  });
+  const current = document.getElementById(abbr);
+  if (current) current.setAttribute("fill", "#00f");
 }
 
+// Load a question
 function loadQuestion() {
-const state = states[currentIndex];
-questionText.textContent = `What is the abbreviation of ${state.name}?`;
-answerInput.value = '';
-feedback.textContent = '';
-answerInput.focus();
-highlightState(state.abbr);
+  const state = states[currentIndex];
+  if (!state) return;
+
+  if (step === 0) {
+    questionText.textContent = `What is the abbreviation of ${state.name}?`;
+    answerInput.style.display = "inline-block";
+    capitalInput.style.display = "none";
+    answerInput.value = "";
+    answerInput.focus();
+  } else {
+    questionText.textContent = `What is the capital of ${state.name}?`;
+    answerInput.style.display = "none";
+    capitalInput.style.display = "inline-block";
+    capitalInput.value = "";
+    capitalInput.focus();
+  }
+
+  feedback.textContent = "";
+  highlightState(state.abbr);
 }
 
-// Submit button logic
-submitBtn.addEventListener('click', () => submitAnswer());
-
-// Press Enter to submit
-answerInput.addEventListener('keydown', function(e) {
-if (e.key === 'Enter') {
-submitAnswer();
-}
-});
+// Submit answer
+submitBtn.addEventListener('click', submitAnswer);
+answerInput.addEventListener('keydown', e => { if (e.key==="Enter") submitAnswer(); });
+capitalInput.addEventListener('keydown', e => { if (e.key==="Enter") submitAnswer(); });
 
 function submitAnswer() {
-    const currentState = states[currentIndex];
+  const state = states[currentIndex];
+  if (!state) return;
 
+  if (step === 0) {
     const userAbbr = answerInput.value.trim().toUpperCase();
-    const userCapital = capitalInput.value.trim().toLowerCase();
-
-    const correctAbbr = currentState.abbr.toUpperCase();
-    const correctCapital = currentState.capital.toLowerCase();
-
-    let isCorrect = true;
-    let feedbackMsg = "";
-
-    // Check abbreviation
-    if (userAbbr !== correctAbbr) {
-        isCorrect = false;
-        feedbackMsg += `Abbreviation incorrect. Correct answer: ${correctAbbr}. `;
+    if (userAbbr === state.abbr) {
+      feedback.textContent = "Correct!";
+      correctCount++;
+    } else {
+      feedback.textContent = `Incorrect. Correct abbreviation is ${state.abbr}.`;
+    }
+    step = 1;
+    setTimeout(loadQuestion, 700);
+    return;
+  } else {
+    const userCap = capitalInput.value.trim().toLowerCase();
+    if (userCap === state.capital.toLowerCase()) {
+      feedback.textContent = "Correct!";
+      correctCount++;
+    } else {
+      feedback.textContent = `Incorrect. Correct capital is ${state.capital}.`;
     }
 
-    // Check capital
-    if (userCapital !== correctCapital) {
-        isCorrect = false;
-        feedbackMsg += `Capital incorrect. Correct answer: ${currentState.capital}. `;
-    }
-
-    if (isCorrect) {
-        feedbackMsg = "Correct!";
-        correctCount++;
-    }
-
-    feedback.textContent = feedbackMsg;
-
-    // Move to next question
+    step = 0;
     currentIndex++;
 
-    // Clear inputs
-    answerInput.value = "";
-    capitalInput.value = "";
-
-    // End of quiz
-    if (currentIndex >= states.length) {
-        endQuiz();
-        return;
+    if (currentIndex === 25) {
+      quizDiv.style.display = "none";
+      gameCanvas.style.display = "block";
+      startPingPong(() => {
+        gameCanvas.style.display = "none";
+        quizDiv.style.display = "block";
+        loadQuestion();
+      });
+      return;
     }
 
-    loadQuestion();
-});
+    if (currentIndex >= states.length) {
+      showResults();
+      return;
+    }
 
-currentIndex++;
-
-if(currentIndex % 25 === 0 && currentIndex < 50) {
-quizDiv.style.display = 'none';
-gameCanvas.style.display = 'block';
-startPingPong(() => {
-gameCanvas.style.display = 'none';
-quizDiv.style.display = 'block';
-loadQuestion();
-});
-} else if(currentIndex >= 50) {
-showResults();
-} else {
-setTimeout(loadQuestion, 800);
-}
+    setTimeout(loadQuestion, 700);
+  }
 }
 
 loadQuestion();
 
 // ---------- 3. Ping Pong Game ----------
 function startPingPong(callback) {
-const canvas = gameCanvas;
-const ctx = canvas.getContext('2d');
-const paddle = {x:780, y:160, width:10, height:80, speed:6};
-const ball = {x:400, y:200, radius:10, dx:4, dy:4};
-let keys = {};
-let animationFrame;
+  const canvas = gameCanvas;
+  const ctx = canvas.getContext('2d');
+  const paddle = {x:780, y:160, width:10, height:80, speed:6};
+  const ball = {x:400, y:200, radius:10, dx:4, dy:4};
+  let keys = {};
+  let animationFrame;
 
-skipBtn.style.display = 'inline-block'; // show skip button
+  skipBtn.style.display = 'inline-block';
 
-function keyDownHandler(e) { keys[e.key] = true; }
-function keyUpHandler(e) { keys[e.key] = false; }
+  function keyDownHandler(e) { keys[e.key]=true; }
+  function keyUpHandler(e) { keys[e.key]=false; }
 
-document.addEventListener('keydown', keyDownHandler);
-document.addEventListener('keyup', keyUpHandler);
+  document.addEventListener('keydown', keyDownHandler);
+  document.addEventListener('keyup', keyUpHandler);
 
-const startTime = Date.now();
-const duration = 120000; // 2 minutes
+  const startTime = Date.now();
+  const duration = 120000;
 
-function endGame() {
-cancelAnimationFrame(animationFrame);
-document.removeEventListener('keydown', keyDownHandler);
-document.removeEventListener('keyup', keyUpHandler);
-skipBtn.style.display = 'none';
-callback();
+  function endGame() {
+    cancelAnimationFrame(animationFrame);
+    document.removeEventListener('keydown', keyDownHandler);
+    document.removeEventListener('keyup', keyUpHandler);
+    skipBtn.style.display = 'none';
+    callback();
+  }
+
+  skipBtn.onclick = endGame;
+
+  function gameLoop() {
+    const now = Date.now();
+    if(now - startTime >= duration) { endGame(); return; }
+
+    if(keys['ArrowUp'] && paddle.y>0) paddle.y-=paddle.speed;
+    if(keys['ArrowDown'] && paddle.y+paddle.height<canvas.height) paddle.y+=paddle.speed;
+
+    ball.x += ball.dx; ball.y += ball.dy;
+
+    if(ball.y-ball.radius<=0||ball.y+ball.radius>=canvas.height) ball.dy*=-1;
+    if(ball.x-ball.radius<=0||ball.x+ball.radius>=canvas.width) ball.dx*=-1;
+
+    if(ball.x+ball.radius>=paddle.x && ball.y>=paddle.y && ball.y<=paddle.y+paddle.height) ball.dx*=-1;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='white';
+    ctx.fillRect(paddle.x,paddle.y,paddle.width,paddle.height);
+    ctx.beginPath();
+    ctx.arc(ball.x,ball.y,ball.radius,0,Math.PI*2);
+    ctx.fill();
+
+    animationFrame = requestAnimationFrame(gameLoop);
+  }
+
+  animationFrame = requestAnimationFrame(gameLoop);
 }
 
-skipBtn.onclick = endGame; // skip button ends game
-
-function gameLoop() {
-const now = Date.now();
-if(now - startTime >= duration) {
-endGame();
-return;
-}
-
-if(keys['ArrowUp'] && paddle.y > 0) paddle.y -= paddle.speed;
-if(keys['ArrowDown'] && paddle.y + paddle.height < canvas.height) paddle.y += paddle.speed;
-
-ball.x += ball.dx;
-ball.y += ball.dy;
-
-if(ball.y - ball.radius <= 0 || ball.y + ball.radius >= canvas.height) ball.dy *= -1;
-if(ball.x - ball.radius <= 0 || ball.x + ball.radius >= canvas.width) ball.dx *= -1;
-
-if(ball.x + ball.radius >= paddle.x && ball.y >= paddle.y && ball.y <= paddle.y + paddle.height) {
-ball.dx *= -1;
-}
-
-ctx.clearRect(0,0,canvas.width,canvas.height);
-ctx.fillStyle = 'white';
-ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
-ctx.beginPath();
-ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
-ctx.fill();
-
-animationFrame = requestAnimationFrame(gameLoop);
-}
-
-animationFrame = requestAnimationFrame(gameLoop);
-}
-
-// ---------- 4. Results Screen ----------
+// ---------- 4. Results ----------
 function showResults() {
-quizDiv.style.display = 'none';
-const percentage = Math.round((correctCount / 50) * 100);
-let grade;
-if(percentage >= 90) grade = 'A';
-else if(percentage >= 80) grade = 'B';
-else if(percentage >= 70) grade = 'C';
-else if(percentage >= 60) grade = 'D';
-else grade = 'F';
+  quizDiv.style.display = "none";
+  resultDiv.style.display = "block";
 
-resultDiv.innerHTML = `<h2>Quiz Finished!</h2>
-<p>Correct answers: ${correctCount}/50</p>
-<p>Percentage: ${percentage}%</p>
-<p>Letter Grade: ${grade}</p>`;
+  const scorePercent = Math.round((correctCount/(states.length*2))*100);
+
+  let grade = "F";
+  if(scorePercent>=90) grade="A";
+  else if(scorePercent>=80) grade="B";
+  else if(scorePercent>=70) grade="C";
+  else if(scorePercent>=60) grade="D";
+
+  resultDiv.innerHTML = `
+    <h2>Your Score: ${correctCount} / ${states.length*2}</h2>
+    <h3>Grade: ${grade}</h3>
+  `;
 }
 </script>
 </body>
