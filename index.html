@@ -95,23 +95,31 @@ button { font-size: 1em; padding: 5px 10px; margin-left: 10px; cursor: pointer; 
 <script>
 // ---------- 1. Define states ----------
 const states = [
-{name:"Alabama", abbr:"AL"}, {name:"Alaska", abbr:"AK"}, {name:"Arizona", abbr:"AZ"},
-{name:"Arkansas", abbr:"AR"}, {name:"California", abbr:"CA"}, {name:"Colorado", abbr:"CO"},
-{name:"Connecticut", abbr:"CT"}, {name:"Delaware", abbr:"DE"}, {name:"Florida", abbr:"FL"},
-{name:"Georgia", abbr:"GA"}, {name:"Hawaii", abbr:"HI"}, {name:"Idaho", abbr:"ID"},
-{name:"Illinois", abbr:"IL"}, {name:"Indiana", abbr:"IN"}, {name:"Iowa", abbr:"IA"},
-{name:"Kansas", abbr:"KS"}, {name:"Kentucky", abbr:"KY"}, {name:"Louisiana", abbr:"LA"},
-{name:"Maine", abbr:"ME"}, {name:"Maryland", abbr:"MD"}, {name:"Massachusetts", abbr:"MA"},
-{name:"Michigan", abbr:"MI"}, {name:"Minnesota", abbr:"MN"}, {name:"Mississippi", abbr:"MS"},
-{name:"Missouri", abbr:"MO"}, {name:"Montana", abbr:"MT"}, {name:"Nebraska", abbr:"NE"},
-{name:"Nevada", abbr:"NV"}, {name:"New Hampshire", abbr:"NH"}, {name:"New Jersey", abbr:"NJ"},
-{name:"New Mexico", abbr:"NM"}, {name:"New York", abbr:"NY"}, {name:"North Carolina", abbr:"NC"},
-{name:"North Dakota", abbr:"ND"}, {name:"Ohio", abbr:"OH"}, {name:"Oklahoma", abbr:"OK"},
-{name:"Oregon", abbr:"OR"}, {name:"Pennsylvania", abbr:"PA"}, {name:"Rhode Island", abbr:"RI"},
-{name:"South Carolina", abbr:"SC"}, {name:"South Dakota", abbr:"SD"}, {name:"Tennessee", abbr:"TN"},
-{name:"Texas", abbr:"TX"}, {name:"Utah", abbr:"UT"}, {name:"Vermont", abbr:"VT"},
-{name:"Virginia", abbr:"VA"}, {name:"Washington", abbr:"WA"}, {name:"West Virginia", abbr:"WV"},
-{name:"Wisconsin", abbr:"WI"}, {name:"Wyoming", abbr:"WY"}
+  {name:"Alabama",abbr:"AL",capital:"Montgomery"},{name:"Alaska",abbr:"AK",capital:"Juneau"},
+  {name:"Arizona",abbr:"AZ",capital:"Phoenix"},{name:"Arkansas",abbr:"AR",capital:"Little Rock"},
+  {name:"California",abbr:"CA",capital:"Sacramento"},{name:"Colorado",abbr:"CO",capital:"Denver"},
+  {name:"Connecticut",abbr:"CT",capital:"Hartford"},{name:"Delaware",abbr:"DE",capital:"Dover"},
+  {name:"Florida",abbr:"FL",capital:"Tallahassee"},{name:"Georgia",abbr:"GA",capital:"Atlanta"},
+  {name:"Hawaii",abbr:"HI",capital:"Honolulu"},{name:"Idaho",abbr:"ID",capital:"Boise"},
+  {name:"Illinois",abbr:"IL",capital:"Springfield"},{name:"Indiana",abbr:"IN",capital:"Indianapolis"},
+  {name:"Iowa",abbr:"IA",capital:"Des Moines"},{name:"Kansas",abbr:"KS",capital:"Topeka"},
+  {name:"Kentucky",abbr:"KY",capital:"Frankfort"},{name:"Louisiana",abbr:"LA",capital:"Baton Rouge"},
+  {name:"Maine",abbr:"ME",capital:"Augusta"},{name:"Maryland",abbr:"MD",capital:"Annapolis"},
+  {name:"Massachusetts",abbr:"MA",capital:"Boston"},{name:"Michigan",abbr:"MI",capital:"Lansing"},
+  {name:"Minnesota",abbr:"MN",capital:"Saint Paul"},{name:"Mississippi",abbr:"MS",capital:"Jackson"},
+  {name:"Missouri",abbr:"MO",capital:"Jefferson City"},{name:"Montana",abbr:"MT",capital:"Helena"},
+  {name:"Nebraska",abbr:"NE",capital:"Lincoln"},{name:"Nevada",abbr:"NV",capital:"Carson City"},
+  {name:"New Hampshire",abbr:"NH",capital:"Concord"},{name:"New Jersey",abbr:"NJ",capital:"Trenton"},
+  {name:"New Mexico",abbr:"NM",capital:"Santa Fe"},{name:"New York",abbr:"NY",capital:"Albany"},
+  {name:"North Carolina",abbr:"NC",capital:"Raleigh"},{name:"North Dakota",abbr:"ND",capital:"Bismarck"},
+  {name:"Ohio",abbr:"OH",capital:"Columbus"},{name:"Oklahoma",abbr:"OK",capital:"Oklahoma City"},
+  {name:"Oregon",abbr:"OR",capital:"Salem"},{name:"Pennsylvania",abbr:"PA",capital:"Harrisburg"},
+  {name:"Rhode Island",abbr:"RI",capital:"Providence"},{name:"South Carolina",abbr:"SC",capital:"Columbia"},
+  {name:"South Dakota",abbr:"SD",capital:"Pierre"},{name:"Tennessee",abbr:"TN",capital:"Nashville"},
+  {name:"Texas",abbr:"TX",capital:"Austin"},{name:"Utah",abbr:"UT",capital:"Salt Lake City"},
+  {name:"Vermont",abbr:"VT",capital:"Montpelier"},{name:"Virginia",abbr:"VA",capital:"Richmond"},
+  {name:"Washington",abbr:"WA",capital:"Olympia"},{name:"West Virginia",abbr:"WV",capital:"Charleston"},
+  {name:"Wisconsin",abbr:"WI",capital:"Madison"},{name:"Wyoming",abbr:"WY",capital:"Cheyenne"}
 ];
 
 function shuffle(array) {
@@ -132,13 +140,19 @@ const gameCanvas = document.getElementById('game');
 const resultDiv = document.getElementById('result');
 const skipBtn = document.getElementById('skipGameBtn');
 
+//jsonPointsTracker = {};
 function highlightState(abbr) {
-states.forEach(s => {
-const path = document.getElementById(s.abbr);
-if(path) path.setAttribute("fill", "#ccc");
-});
-const currentPath = document.getElementById(abbr);
-if(currentPath) currentPath.setAttribute("fill", "#00f");
+	//jsonPointsTracker[abbr] = true;
+	states.forEach(s => {
+		const path = document.getElementById(s.abbr);
+		if(path){
+			path.setAttribute("fill", "#ccc");
+		}
+	});
+	const currentPath = document.getElementById(abbr);
+	if(currentPath){
+		currentPath.setAttribute("fill", "#00f");
+	}
 }
 
 function loadQuestion() {
@@ -161,14 +175,51 @@ submitAnswer();
 });
 
 function submitAnswer() {
-const userAnswer = answerInput.value.trim().toUpperCase();
-const state = states[currentIndex];
-if(userAnswer === state.abbr) {
-feedback.textContent = "✅ Correct!";
-correctCount++;
-} else {
-feedback.textContent = `❌ Wrong! Correct answer is ${state.abbr}`;
-}
+    const currentState = states[currentIndex];
+
+    const userAbbr = answerInput.value.trim().toUpperCase();
+    const userCapital = capitalInput.value.trim().toLowerCase();
+
+    const correctAbbr = currentState.abbr.toUpperCase();
+    const correctCapital = currentState.capital.toLowerCase();
+
+    let isCorrect = true;
+    let feedbackMsg = "";
+
+    // Check abbreviation
+    if (userAbbr !== correctAbbr) {
+        isCorrect = false;
+        feedbackMsg += `Abbreviation incorrect. Correct answer: ${correctAbbr}. `;
+    }
+
+    // Check capital
+    if (userCapital !== correctCapital) {
+        isCorrect = false;
+        feedbackMsg += `Capital incorrect. Correct answer: ${currentState.capital}. `;
+    }
+
+    if (isCorrect) {
+        feedbackMsg = "Correct!";
+        correctCount++;
+    }
+
+    feedback.textContent = feedbackMsg;
+
+    // Move to next question
+    currentIndex++;
+
+    // Clear inputs
+    answerInput.value = "";
+    capitalInput.value = "";
+
+    // End of quiz
+    if (currentIndex >= states.length) {
+        endQuiz();
+        return;
+    }
+
+    loadQuestion();
+});
 
 currentIndex++;
 
