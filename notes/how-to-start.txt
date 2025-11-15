@@ -5,9 +5,9 @@ Notes-how to host a page
 3. select the repo and got to setting from the links on the top
 4. nav to 'Pages' from the left pane
 5. On section 'Deploy from branch', select 'Main' and 'root' 
-	-	root means my 'index.html' will be right in the root and not within a subfolder beneath
-	-	it is possible to better organize by creating a subfolder named 'source' and specity that instead
-	-	this way I can keep my other artifacts like docs, tooling, etc outside of main source code
+	-	root means the standard 'index.html' file will be right in the root folder.
+	-	it is possible to move this to 'docs' folder. Option is only limited to 'root' or 'docs'
+	-	moving to 'docs' will help to keep other artifacts like docs, tooling, etc outside of main source code
 6. optional - if a custom domain is available (purchased from godaddy), it is possible to specify the mapping
 7. press 'Save' -- wait for a minute or so, and github will provide a published site links
 
