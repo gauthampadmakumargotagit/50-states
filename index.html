@@ -21,9 +21,71 @@
 <h1>USA States Quiz</h1>
 <div id="quiz">
   <div id="questionText"></div>
-  <input type="text" id="abbrInput" placeholder="State Abbreviation" maxlength="2">
-  <input type="text" id="capitalInput" placeholder="State Capital">
-  <button id="submitBtn">Submit</button>
+    <!-- Abbreviation input (smaller, auto-uppercase) -->
+  <input type="text" id="abbrInput" maxlength="2" style="width:50px; text-transform:uppercase;" placeholder="AB">
+
+  <!-- Capital dropdown -->
+  <select id="capitalInput">
+    <option value="">Select Capital</option>
+    <option value="Montgomery">Montgomery</option>
+    <option value="Juneau">Juneau</option>
+    <option value="Phoenix">Phoenix</option>
+    <option value="Little Rock">Little Rock</option>
+    <option value="Sacramento">Sacramento</option>
+    <option value="Denver">Denver</option>
+    <option value="Hartford">Hartford</option>
+    <option value="Dover">Dover</option>
+    <option value="Tallahassee">Tallahassee</option>
+    <option value="Atlanta">Atlanta</option>
+    <option value="Honolulu">Honolulu</option>
+    <option value="Boise">Boise</option>
+    <option value="Springfield">Springfield</option>
+    <option value="Indianapolis">Indianapolis</option>
+    <option value="Des Moines">Des Moines</option>
+    <option value="Topeka">Topeka</option>
+    <option value="Frankfort">Frankfort</option>
+    <option value="Baton Rouge">Baton Rouge</option>
+    <option value="Augusta">Augusta</option>
+    <option value="Annapolis">Annapolis</option>
+    <option value="Boston">Boston</option>
+    <option value="Lansing">Lansing</option>
+    <option value="Saint Paul">Saint Paul</option>
+    <option value="Jackson">Jackson</option>
+    <option value="Jefferson City">Jefferson City</option>
+    <option value="Helena">Helena</option>
+    <option value="Lincoln">Lincoln</option>
+    <option value="Carson City">Carson City</option>
+    <option value="Concord">Concord</option>
+    <option value="Trenton">Trenton</option>
+    <option value="Santa Fe">Santa Fe</option>
+    <option value="Albany">Albany</option>
+    <option value="Raleigh">Raleigh</option>
+    <option value="Bismarck">Bismarck</option>
+    <option value="Columbus">Columbus</option>
+    <option value="Oklahoma City">Oklahoma City</option>
+    <option value="Salem">Salem</option>
+    <option value="Harrisburg">Harrisburg</option>
+    <option value="Providence">Providence</option>
+    <option value="Columbia">Columbia</option>
+    <option value="Pierre">Pierre</option>
+    <option value="Nashville">Nashville</option>
+    <option value="Austin">Austin</option>
+    <option value="Salt Lake City">Salt Lake City</option>
+    <option value="Montpelier">Montpelier</option>
+    <option value="Richmond">Richmond</option>
+    <option value="Olympia">Olympia</option>
+    <option value="Charleston">Charleston</option>
+    <option value="Madison">Madison</option>
+    <option value="Cheyenne">Cheyenne</option>
+  </select>
+
+  <div id="map"></div>
+</div>
+
+<div id="result" style="display:none;"></div>
+
+<div id="result" style="display:none;"></div>
+
   <div id="mapContainer">
     <!-- Paste your SVG map here -->
     <svg id="map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600">
@@ -149,7 +211,6 @@ let attempts = 3;
 
 const abbrInput = document.getElementById('abbrInput');
 const capitalInput = document.getElementById('capitalInput');
-const submitBtn = document.getElementById('submitBtn');
 const questionText = document.getElementById('questionText');
 const map = document.getElementById('map');
 const resultDiv = document.getElementById('result');
@@ -166,9 +227,27 @@ function showQuestion() {
   attempts = 3;
   abbrInput.value = '';
   capitalInput.value = '';
+
   const state = states[currentIndex];
-  questionText.textContent = `Enter abbreviation and capital for ${state.name}, then click it on the map.`;
+  questionText.innerHTML = `Enter abbreviation and capital for <span style="font-weight:bold; background-color:yellow;">${state.name}</span>, then click it on the map.`;
 }
+
+// move to next input on enter
+abbrInput.addEventListener('keydown', e => {
+  if(e.key === 'Enter') {
+    capitalInput.focus();
+  }
+});
+capitalInput.addEventListener('keydown', e => {
+  if(e.key === 'Enter') {
+    capitalInput.blur(); // lose focus, map click now acts as submit
+  }
+});
+
+// force uppercase for abbreviation input
+abbrInput.addEventListener('input', () => {
+  abbrInput.value = abbrInput.value.toUpperCase();
+});
 
 function nextQuestion() {
   currentIndex++;
@@ -198,23 +277,18 @@ function showResults() {
   resultDiv.style.display = 'block';
 }
 
-submitBtn.addEventListener('click', () => {
-  const state = states[currentIndex];
-  const abbrVal = abbrInput.value.trim().toUpperCase();
-  const capitalVal = capitalInput.value.trim();
-  
-  if(abbrVal === state.abbr) abbrScore++;
-  if(capitalVal.toLowerCase() === state.capital.toLowerCase()) capitalScore++;
-  
-  questionText.textContent = `Now, click ${state.name} on the map. Attempts left: ${attempts}`;
-});
-
+// map click handling
 map.addEventListener('click', e => {
   const state = states[currentIndex];
   const clicked = e.target.id;
-  
   if(!clicked) return;
-  
+
+  const abbrVal = abbrInput.value.trim().toUpperCase();
+  const capitalVal = capitalInput.value;
+
+  if(abbrVal === state.abbr) abbrScore++;
+  if(capitalVal === state.capital) capitalScore++;
+
   if(clicked === state.abbr) {
     mapScore++;
     document.getElementById(clicked).classList.add('correct');
@@ -222,7 +296,7 @@ map.addEventListener('click', e => {
   } else {
     attempts--;
     if(attempts > 0) {
-      questionText.textContent = `Wrong! Try again (${attempts} attempts left)`;
+      questionText.innerHTML = `Wrong! Try again (${attempts} attempts left). <span style="font-weight:bold; background-color:yellow;">${state.name}</span>`;
     } else {
       document.getElementById(state.abbr).classList.add('wrong');
       setTimeout(nextQuestion, 1000);
